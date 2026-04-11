@@ -1,4 +1,4 @@
-"""Cross-artifact consistency checks for BRD, BA, and SA outputs."""
+"""Cross-artifact consistency checks for BRD, BA, SA, Dev, and QA outputs."""
 
 
 def check_ba_consistency(normalized_brd, ba_plan):
@@ -45,6 +45,56 @@ def check_sa_consistency(normalized_brd, task_markdown, architecture_plan, dev_p
 
     if "## Epics" in task_markdown and not dev_plan.implementation_order:
         warnings.append("BA tasks exist but implementation order is empty.")
+
+    return {
+        "ok": len(issues) == 0,
+        "issues": issues,
+        "warnings": warnings,
+    }
+
+
+def check_dev_consistency(normalized_brd, task_markdown, architecture_markdown, dev_plan):
+    """Validate Dev artifacts against BRD/BA/SA context."""
+    issues = []
+    warnings = []
+
+    if not dev_plan.module_plan:
+        issues.append("Dev plan has no module plan.")
+    if not dev_plan.code_artifacts:
+        issues.append("Dev plan has no code artifacts.")
+    if not dev_plan.verification_steps:
+        issues.append("Dev plan has no verification steps.")
+
+    if normalized_brd.open_questions and not dev_plan.open_questions:
+        warnings.append("Dev plan does not carry BRD open questions.")
+    if "## Main Components" in architecture_markdown and len(dev_plan.module_plan) < 2:
+        warnings.append("Architecture defines components but module plan is sparse.")
+    if "## Epics" in task_markdown and len(dev_plan.code_artifacts) < 1:
+        warnings.append("BA epics exist but no code artifact proposal found.")
+
+    return {
+        "ok": len(issues) == 0,
+        "issues": issues,
+        "warnings": warnings,
+    }
+
+
+def check_qa_consistency(normalized_brd, qa_plan):
+    """Validate QA artifacts against BRD context."""
+    issues = []
+    warnings = []
+
+    if not qa_plan.test_levels:
+        issues.append("QA plan has no test levels.")
+    if not qa_plan.test_cases:
+        issues.append("QA plan has no test cases.")
+    if not qa_plan.exit_criteria:
+        issues.append("QA plan has no exit criteria.")
+
+    if normalized_brd.functional_requirements and not qa_plan.functional_scenarios:
+        warnings.append("BRD has functional requirements but QA functional scenarios are empty.")
+    if normalized_brd.non_functional_requirements and not qa_plan.non_functional_scenarios:
+        warnings.append("BRD has non-functional requirements but QA non-functional scenarios are empty.")
 
     return {
         "ok": len(issues) == 0,

@@ -1,0 +1,74 @@
+# Generated Code Plan
+
+## Implementation Summary
+{{ plan.implementation_summary or "Not specified." }}
+
+## Setup Steps
+{% if plan.setup_steps %}
+{% for item in plan.setup_steps %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Module Plan
+{% if plan.module_plan %}
+{% for item in plan.module_plan %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Code Artifacts
+{% if plan.code_artifacts %}
+{% for artifact in plan.code_artifacts %}
+### {{ artifact.file_path or "Unnamed artifact" }}
+- Language: {{ artifact.language or "Not specified" }}
+- Purpose: {{ artifact.purpose or "Not specified" }}
+
+```{{ artifact.language or "text" }}
+{{ artifact.code_snippet or "# No snippet provided" }}
+```
+
+{% endfor %}
+{% else %}
+- No code artifacts proposed.
+{% endif %}
+
+## Verification Steps
+{% if plan.verification_steps %}
+{% for item in plan.verification_steps %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Risks
+{% if plan.risks %}
+{% for item in plan.risks %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None explicitly identified.
+{% endif %}
+
+## Assumptions
+{% if plan.assumptions %}
+{% for item in plan.assumptions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None explicitly identified.
+{% endif %}
+
+## Open Questions
+{% if plan.open_questions %}
+{% for item in plan.open_questions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None.
+{% endif %}

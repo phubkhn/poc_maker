@@ -12,33 +12,54 @@ Repository instructions for future Codex runs in this project.
 - Prefer synchronous code unless async is explicitly requested.
 - Avoid over-engineering and speculative abstractions.
 
-## Architecture Direction (Step 1)
+## Current Architecture
 
-- This step is only a scaffold for a future BRD-to-engineering pipeline.
-- Future roles (BA, SA, Dev, Test) are planned but not implemented yet.
-- No multi-agent orchestration in current step.
+- Artifact-driven multi-stage pipeline:
+  - BRD -> BA -> SA -> Dev -> QA
+- Default standards artifacts:
+  - `artifacts/code_standards.md`
+  - `artifacts/review_standards.md`
+- Each stage has:
+  - mode `deterministic | llm | hybrid`
+  - one review/enhance pass by default (`*_REVIEW_ITERATIONS=1`)
+  - consistency gate before moving to next stage.
+- Orchestration entrypoint:
+  - `python3 -m brd_agent.main run-pipeline --input input/sample_brd.md --output-dir artifacts`
 
 ## Development Workflow
 
-1. Create a virtual environment and install dependencies with pip:
+1. Create venv + install dependencies:
+   - `python3 -m venv .venv`
+   - `source .venv/bin/activate`
    - `pip3 install -e ".[dev]"`
 2. Run tests:
-   - `pytest`
-3. Run CLI:
-   - `python -m brd_agent.main read-brd --input input/sample_brd.md`
+   - `pytest -q`
+3. Run commands per stage (when debugging):
+   - `read-brd`
+   - `generate-ba`
+   - `generate-sa`
+   - `generate-dev`
+   - `generate-qa`
 
 ## Coding Conventions
 
 - Keep service functions focused and single-purpose.
 - Use Pydantic models for structured payloads.
 - Keep side effects isolated in service modules.
-- Add tests for new behavior before expanding orchestration.
+- Add deterministic fallback for LLM stages where practical.
+- New stage must include:
+  - schema
+  - prompt
+  - writer/template (if markdown artifact)
+  - consistency gate
+  - tests
 
 ## Directory Expectations
 
 - `input/`: source BRD markdown files.
-- `artifacts/`: generated JSON/markdown artifacts.
-- `templates/`: future Jinja templates.
-- `prompts/`: future role-specific prompt templates.
-- `src/brd_agent/`: application source.
-- `tests/`: unit tests.
+- `artifacts/`: generated artifacts.
+- `prompts/`: role-specific generation/review prompts.
+- `src/brd_agent/schemas`: stage contracts.
+- `src/brd_agent/services`: stage logic + orchestration.
+- `src/brd_agent/templates`: markdown rendering templates.
+- `tests/`: unit/CLI pipeline tests.

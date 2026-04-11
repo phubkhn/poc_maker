@@ -1,0 +1,47 @@
+# QA Test Cases
+
+{% if plan.test_cases %}
+{% for case in plan.test_cases %}
+## {{ case.test_id or "NO-ID" }} - {{ case.title or "Untitled test" }}
+- Type: {{ case.test_type or "Not specified" }}
+
+### Preconditions
+{% if case.preconditions %}
+{% for item in case.preconditions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None.
+{% endif %}
+
+### Steps
+{% if case.steps %}
+{% for item in case.steps %}
+1. {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+### Expected Results
+{% if case.expected_results %}
+{% for item in case.expected_results %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+### Trace To Requirements
+{% if case.trace_to_requirements %}
+{% for item in case.trace_to_requirements %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+{% endfor %}
+{% else %}
+No test cases provided.
+{% endif %}

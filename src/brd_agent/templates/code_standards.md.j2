@@ -1,0 +1,11 @@
+# Code Standards
+
+These default standards are mandatory for Dev-stage outputs in this pipeline.
+
+{% for section in sections %}
+## {{ section["title"] }}
+{% for item in section["items"] %}
+- {{ item }}
+{% endfor %}
+
+{% endfor %}

@@ -301,5 +301,5 @@ def generate_ba_plan(normalized_brd, llm_client=None):
     # hybrid
     try:
         return agent.generate_plan(normalized_brd)
-    except BAAgentError:
+    except Exception:
         return deterministic_generate_ba_plan(normalized_brd)

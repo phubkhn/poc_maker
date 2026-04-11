@@ -1,42 +1,60 @@
 # Project Flow Guide
 
-Huong dan tung step de hieu va chay du an.
+Step-by-step guide to understand and operate the `BRD -> BA -> SA -> Dev -> QA` project flow.
 
-## 1) Chuan bi moi truong
+## 0) Flow Overview
+
+Pipeline execution order:
+1. BRD ingestion and normalization
+2. Generate default standards (`code_standards.md`, `review_standards.md`)
+3. BA generation + review + consistency gate
+4. SA generation + review + consistency gate
+5. Dev generation + review + consistency gate
+6. QA generation + review + consistency gate
+
+## 1) Prepare Environment
+
+Requirements:
+- Python `>=3.9,<3.10` (target: `3.9.6`)
+- pip3
 
 ```bash
 cd /Users/dirak/Documents/AI/POC_MAKER
 python3 -m venv .venv
 source .venv/bin/activate
+pip3 install --upgrade pip
 pip3 install -e ".[dev]"
 ```
 
-## 2) Cau hinh mode + model
+## 2) Configure Environment Variables
 
-Khuyen nghi `hybrid`:
+Copy example file:
 
 ```bash
+cp .env.example .env
+```
+
+Quick setup:
+
+```bash
+export OPENAI_API_KEY=your_key_here
+
 export BRD_ANALYZER_MODE=hybrid
 export BA_AGENT_MODE=hybrid
 export SA_AGENT_MODE=hybrid
+export DEV_AGENT_MODE=hybrid
+export QA_AGENT_MODE=hybrid
 
-export BRD_LLM_MODEL=gpt-4o-mini
-export BA_LLM_MODEL=gpt-4o-mini
-export SA_LLM_MODEL=gpt-4o-mini
-export OPENAI_API_KEY=your_key_here
-```
-
-Tuy chon review loop:
-
-```bash
 export BA_REVIEW_ITERATIONS=1
 export SA_REVIEW_ITERATIONS=1
+export DEV_REVIEW_ITERATIONS=1
+export QA_REVIEW_ITERATIONS=1
 ```
 
-## 3) Step BRD (`read-brd`)
+## 3) BRD Step (`read-brd`)
 
 Input:
-- BRD markdown/text (vi du `input/sample_brd.md`)
+- `input/sample_brd.md` (or any BRD markdown/text file)
 
 Run:
 
@@ -49,10 +67,25 @@ Output:
 - `artifacts/context.md`
 - `artifacts/brd_gaps.md`
 
-Y nghia:
-- Parse BRD thanh schema chuan de cac buoc sau dung chung.
+## 4) Standards Step (`generate-standards`)
 
-## 4) Step BA (`generate-ba`)
+Input:
+- None
+
+Run:
+
+```bash
+python3 -m brd_agent.main generate-standards --output-dir artifacts
+```
+
+Output:
+- `artifacts/code_standards.md`
+- `artifacts/review_standards.md`
+
+Meaning:
+- Dev and review flows use these standards as the default baseline.
+
+## 5) BA Step (`generate-ba`)
 
 Input:
 - `artifacts/brd_normalized.json`
@@ -66,11 +99,7 @@ python3 -m brd_agent.main generate-ba --input artifacts/brd_normalized.json --ou
 Output:
 - `artifacts/task.md`
 
-Y nghia:
-- BA tao task breakdown chi tiet (epic/task/dependency/risk/acceptance criteria/module hint).
-- Co auto review-enhance 1 lan + consistency gate.
-
-## 5) Step SA (`generate-sa`)
+## 6) SA Step (`generate-sa`)
 
 Input:
 - `artifacts/brd_normalized.json`
@@ -86,35 +115,101 @@ Output:
 - `artifacts/architecture.md`
 - `artifacts/dev_plan.md`
 
-Y nghia:
-- SA chuyen BRD + BA tasks thanh plan ky thuat chi tiet.
-- Co auto review-enhance 1 lan + consistency gate.
+## 7) Dev Step (`generate-dev`)
 
-## 6) Chay full pipeline 1 lenh
+Input:
+- `artifacts/brd_normalized.json`
+- `artifacts/task.md`
+- `artifacts/architecture.md`
+- `artifacts/dev_plan.md`
+- (optional) `artifacts/code_standards.md`
+- (optional) `artifacts/review_standards.md`
+
+Run:
+
+```bash
+python3 -m brd_agent.main generate-dev \
+  --brd artifacts/brd_normalized.json \
+  --tasks artifacts/task.md \
+  --architecture artifacts/architecture.md \
+  --dev-plan artifacts/dev_plan.md \
+  --code-standards artifacts/code_standards.md \
+  --review-standards artifacts/review_standards.md \
+  --output-dir artifacts
+```
+
+Output:
+- `artifacts/generated_code.md`
+
+Note:
+- If standards are not provided or files do not exist, built-in defaults are used.
+
+## 8) QA Step (`generate-qa`)
+
+Input:
+- `artifacts/brd_normalized.json`
+- `artifacts/task.md`
+- `artifacts/architecture.md`
+- `artifacts/dev_plan.md`
+- `artifacts/generated_code.md`
+
+Run:
+
+```bash
+python3 -m brd_agent.main generate-qa \
+  --brd artifacts/brd_normalized.json \
+  --tasks artifacts/task.md \
+  --architecture artifacts/architecture.md \
+  --dev-plan artifacts/dev_plan.md \
+  --generated-code artifacts/generated_code.md \
+  --output-dir artifacts
+```
+
+Output:
+- `artifacts/qa_test_plan.md`
+- `artifacts/qa_test_cases.md`
+
+## 9) Run Full Pipeline in One Command
 
 ```bash
 python3 -m brd_agent.main run-pipeline --input input/sample_brd.md --output-dir artifacts
 ```
 
-Flow noi bo:
-- BRD -> BA -> SA
-- Co trace log thoi gian tung step.
+Full output set:
+- `brd_normalized.json`
+- `context.md`
+- `brd_gaps.md`
+- `code_standards.md`
+- `review_standards.md`
+- `task.md`
+- `architecture.md`
+- `dev_plan.md`
+- `generated_code.md`
+- `qa_test_plan.md`
+- `qa_test_cases.md`
 
-## 7) Kiem thu
+## 10) Validate With Tests
 
 ```bash
 pytest -q
 ```
 
-Trang thai hien tai:
-- Test pass toan bo (`23 passed`).
+Current status:
+- `38 passed`
 
-## 8) Goi y doc output truoc khi sang Dev
+## 11) Suggested Artifact Reading Order Before Real Coding
 
-Nen doc ky 3 file:
-- `artifacts/task.md`
-- `artifacts/architecture.md`
-- `artifacts/dev_plan.md`
+Recommended order:
+1. `artifacts/task.md`
+2. `artifacts/architecture.md`
+3. `artifacts/dev_plan.md`
+4. `artifacts/code_standards.md`
+5. `artifacts/review_standards.md`
+6. `artifacts/generated_code.md`
+7. `artifacts/qa_test_plan.md`
 
-Muc tieu:
-- Kiem tra do ro rang, do day du, va tinh kha thi truoc khi bat dau tao code.
+Goal:
+- Ensure requirement completeness,
+- keep BRD scope alignment,
+- ensure technical feasibility,
+- and enforce coding/review standards before real implementation in source code.

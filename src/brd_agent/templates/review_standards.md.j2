@@ -1,0 +1,20 @@
+# Review Standards
+
+## Severity Levels
+{% for item in severity_levels %}
+- {{ item }}
+{% endfor %}
+
+## Stage Checklists
+{% for checklist in stage_checklists %}
+### {{ checklist.stage }}
+{% for check in checklist.checks %}
+- {{ check }}
+{% endfor %}
+
+{% endfor %}
+
+## Definition Of Done
+{% for item in definition_of_done %}
+- {{ item }}
+{% endfor %}

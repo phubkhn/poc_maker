@@ -1,0 +1,85 @@
+# QA Test Plan
+
+## Strategy Summary
+{{ plan.strategy_summary or "Not specified." }}
+
+## Test Levels
+{% if plan.test_levels %}
+{% for item in plan.test_levels %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Test Environments
+{% if plan.environments %}
+{% for item in plan.environments %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Functional Test Scenarios
+{% if plan.functional_scenarios %}
+{% for item in plan.functional_scenarios %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Non-Functional Test Scenarios
+{% if plan.non_functional_scenarios %}
+{% for item in plan.non_functional_scenarios %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Automation Candidates
+{% if plan.automation_candidates %}
+{% for item in plan.automation_candidates %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Quality Risks
+{% if plan.quality_risks %}
+{% for item in plan.quality_risks %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None explicitly identified.
+{% endif %}
+
+## Exit Criteria
+{% if plan.exit_criteria %}
+{% for item in plan.exit_criteria %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Assumptions
+{% if plan.assumptions %}
+{% for item in plan.assumptions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None explicitly identified.
+{% endif %}
+
+## Open Questions
+{% if plan.open_questions %}
+{% for item in plan.open_questions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None.
+{% endif %}

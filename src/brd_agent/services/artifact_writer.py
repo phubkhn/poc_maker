@@ -9,13 +9,25 @@ from brd_agent.config import (
     DEFAULT_ACCEPTANCE_NAME,
     DEFAULT_ARCHITECTURE_NAME,
     DEFAULT_BRD_NORMALIZED_NAME,
+    DEFAULT_CODE_STANDARDS_NAME,
     DEFAULT_CONTEXT_NAME,
     DEFAULT_DEV_PLAN_NAME,
     DEFAULT_GAPS_NAME,
+    DEFAULT_GENERATED_CODE_NAME,
+    DEFAULT_QA_TEST_CASES_NAME,
+    DEFAULT_QA_TEST_PLAN_NAME,
+    DEFAULT_REVIEW_STANDARDS_NAME,
     DEFAULT_TASK_NAME,
 )
 from brd_agent.schemas.ba import BAPlan
+from brd_agent.schemas.dev import DevPlan
+from brd_agent.schemas.qa import QAPlan
 from brd_agent.schemas.sa import SAArchitecturePlan, SADevelopmentPlan
+from brd_agent.services.standards import (
+    default_code_standards_context,
+    default_review_standards_context,
+)
+
 
 def write_json_artifact(data, output_path):
     """Persist dictionary-like data as indented JSON."""
@@ -161,3 +173,91 @@ def write_sa_artifacts(architecture_markdown, dev_plan_markdown, output_dir):
         "architecture": architecture_path,
         "dev_plan": dev_plan_path,
     }
+
+
+def render_dev_code_markdown(dev_plan):
+    """Render generated code markdown from DevPlan object."""
+    if not isinstance(dev_plan, DevPlan):
+        raise TypeError("dev_plan must be a DevPlan instance.")
+    return _render_template("generated_code.md.j2", {"plan": dev_plan})
+
+
+def write_dev_artifacts(generated_code_markdown, output_dir):
+    """Write Dev artifacts."""
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    generated_code_path = write_markdown_artifact(
+        generated_code_markdown,
+        output_path / DEFAULT_GENERATED_CODE_NAME,
+    )
+    return {"generated_code": generated_code_path}
+
+
+def render_qa_test_plan_markdown(qa_plan):
+    """Render QA test strategy markdown from QAPlan object."""
+    if not isinstance(qa_plan, QAPlan):
+        raise TypeError("qa_plan must be a QAPlan instance.")
+    return _render_template("qa_test_plan.md.j2", {"plan": qa_plan})
+
+
+def render_qa_test_cases_markdown(qa_plan):
+    """Render QA test cases markdown from QAPlan object."""
+    if not isinstance(qa_plan, QAPlan):
+        raise TypeError("qa_plan must be a QAPlan instance.")
+    return _render_template("qa_test_cases.md.j2", {"plan": qa_plan})
+
+
+def write_qa_artifacts(test_plan_markdown, test_cases_markdown, output_dir):
+    """Write QA artifacts."""
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    test_plan_path = write_markdown_artifact(
+        test_plan_markdown,
+        output_path / DEFAULT_QA_TEST_PLAN_NAME,
+    )
+    test_cases_path = write_markdown_artifact(
+        test_cases_markdown,
+        output_path / DEFAULT_QA_TEST_CASES_NAME,
+    )
+    return {
+        "qa_test_plan": test_plan_path,
+        "qa_test_cases": test_cases_path,
+    }
+
+
+def render_code_standards_markdown():
+    """Render default code standards markdown."""
+    return _render_template(
+        "code_standards.md.j2",
+        default_code_standards_context(),
+    )
+
+
+def render_review_standards_markdown():
+    """Render default review standards markdown."""
+    return _render_template(
+        "review_standards.md.j2",
+        default_review_standards_context(),
+    )
+
+
+def write_standards_artifacts(code_standards_markdown, review_standards_markdown, output_dir):
+    """Write standards artifacts used by Dev and review stages."""
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    code_standards_path = write_markdown_artifact(
+        code_standards_markdown,
+        output_path / DEFAULT_CODE_STANDARDS_NAME,
+    )
+    review_standards_path = write_markdown_artifact(
+        review_standards_markdown,
+        output_path / DEFAULT_REVIEW_STANDARDS_NAME,
+    )
+    return {
+        "code_standards": code_standards_path,
+        "review_standards": review_standards_path,
+    }
+    DEFAULT_CODE_STANDARDS_NAME,

@@ -283,7 +283,7 @@ def generate_sa_artifacts(normalized_brd, task_markdown, llm_client=None):
     # hybrid
     try:
         return agent.generate(normalized_brd, task_markdown)
-    except SAAgentError:
+    except Exception:
         return deterministic_generate_sa_artifacts(normalized_brd, task_markdown)
 
 

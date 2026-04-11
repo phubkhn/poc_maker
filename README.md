@@ -1,23 +1,26 @@
 # BRD Agent Pipeline
 
-Artifact-driven pipeline cho flow `BRD -> BA -> SA`, tập trung vào output đủ chi tiết để làm input tốt cho bước tạo code sau này.
+Artifact-driven pipeline for `BRD -> BA -> SA -> Dev -> QA`, with one auto review/enhance pass at each stage before moving to the next stage.
 
-## Mục Tiêu
+## Current Capabilities
 
-- Đọc BRD từ file và chuẩn hóa dữ liệu.
-- Sinh BA task breakdown theo cấu trúc rõ ràng.
-- Sinh SA `architecture.md` và `dev_plan.md`.
-- Mỗi bước hỗ trợ:
-  - mode `deterministic | llm | hybrid`
-  - 1 vòng review/enhance tự động (configurable)
-  - consistency gate để bắt lỗi thiếu coverage.
+- BRD ingestion and normalization.
+- BA agent generates `task.md`.
+- SA agent generates `architecture.md` and `dev_plan.md`.
+- Dev agent generates `generated_code.md`.
+- QA agent generates `qa_test_plan.md` and `qa_test_cases.md`.
+- Default standards artifacts:
+  - `code_standards.md`
+  - `review_standards.md`
+- Multi-agent orchestration via `run-pipeline`.
+- Consistency gates for BA/SA/Dev/QA outputs.
 
-## Yêu Cầu Môi Trường
+## Environment Requirements
 
-- Python `>=3.9,<3.10` (mục tiêu chính: `3.9.6`)
+- Python `>=3.9,<3.10` (target: `3.9.6`)
 - `pip3`
 
-## Cài Đặt Nhanh
+## Setup
 
 ```bash
 python3 -m venv .venv
@@ -26,126 +29,130 @@ pip3 install --upgrade pip
 pip3 install -e ".[dev]"
 ```
 
-## Cấu Hình
-
-Copy file mẫu:
+## Configuration
 
 ```bash
 cp .env.example .env
 ```
 
-Export biến môi trường (ví dụ):
+The app reads configuration from shell environment variables.
 
 ```bash
 export OPENAI_API_KEY=your_key_here
 
 export BRD_ANALYZER_MODE=hybrid
-export BRD_LLM_MODEL=gpt-4o-mini
-export BRD_LLM_TEMPERATURE=0
-export BRD_EXTRACTION_PROMPT_PATH=prompts/brd_extraction_prompt.md
-
 export BA_AGENT_MODE=hybrid
-export BA_LLM_MODEL=gpt-4o-mini
-export BA_LLM_TEMPERATURE=0.2
-export BA_TASK_PROMPT_PATH=prompts/ba_task_prompt.md
-export BA_REVIEW_PROMPT_PATH=prompts/ba_review_prompt.md
-export BA_REVIEW_ITERATIONS=1
-
 export SA_AGENT_MODE=hybrid
-export SA_LLM_MODEL=gpt-4o-mini
-export SA_LLM_TEMPERATURE=0.2
-export SA_ARCH_PROMPT_PATH=prompts/sa_architecture_prompt.md
-export SA_DEV_PLAN_PROMPT_PATH=prompts/sa_dev_plan_prompt.md
-export SA_ARCH_REVIEW_PROMPT_PATH=prompts/sa_architecture_review_prompt.md
-export SA_DEV_PLAN_REVIEW_PROMPT_PATH=prompts/sa_dev_plan_review_prompt.md
-export SA_REVIEW_ITERATIONS=1
+export DEV_AGENT_MODE=hybrid
+export QA_AGENT_MODE=hybrid
 
-export DEV_REVIEW_PROMPT_PATH=prompts/dev_review_prompt.md
+export BA_REVIEW_ITERATIONS=1
+export SA_REVIEW_ITERATIONS=1
+export DEV_REVIEW_ITERATIONS=1
+export QA_REVIEW_ITERATIONS=1
 ```
 
-Note: app đọc trực tiếp từ environment shell; `.env` chỉ là file tham chiếu.
+## Run Commands
 
-## Chạy Theo Từng Bước
-
-### 1) BRD Extraction
+### BRD Stage
 
 ```bash
 python3 -m brd_agent.main read-brd --input input/sample_brd.md --output-dir artifacts
 ```
 
-Output:
-
+Produces:
 - `artifacts/brd_normalized.json`
 - `artifacts/context.md`
 - `artifacts/brd_gaps.md`
 
-### 2) BA Generation
+### Standards Stage
+
+```bash
+python3 -m brd_agent.main generate-standards --output-dir artifacts
+```
+
+Produces:
+- `artifacts/code_standards.md`
+- `artifacts/review_standards.md`
+
+### BA Stage
 
 ```bash
 python3 -m brd_agent.main generate-ba --input artifacts/brd_normalized.json --output-dir artifacts
 ```
 
-Output:
-
+Produces:
 - `artifacts/task.md`
 
-### 3) SA Generation
+### SA Stage
 
 ```bash
 python3 -m brd_agent.main generate-sa --brd artifacts/brd_normalized.json --tasks artifacts/task.md --output-dir artifacts
 ```
 
-Output:
-
+Produces:
 - `artifacts/architecture.md`
 - `artifacts/dev_plan.md`
 
-## Chạy Full Pipeline
+### Dev Stage
+
+```bash
+python3 -m brd_agent.main generate-dev \
+  --brd artifacts/brd_normalized.json \
+  --tasks artifacts/task.md \
+  --architecture artifacts/architecture.md \
+  --dev-plan artifacts/dev_plan.md \
+  --code-standards artifacts/code_standards.md \
+  --review-standards artifacts/review_standards.md \
+  --output-dir artifacts
+```
+
+Produces:
+- `artifacts/generated_code.md`
+
+Note:
+- If standards files are not provided or missing, Dev uses built-in default standards.
+
+### QA Stage
+
+```bash
+python3 -m brd_agent.main generate-qa \
+  --brd artifacts/brd_normalized.json \
+  --tasks artifacts/task.md \
+  --architecture artifacts/architecture.md \
+  --dev-plan artifacts/dev_plan.md \
+  --generated-code artifacts/generated_code.md \
+  --output-dir artifacts
+```
+
+Produces:
+- `artifacts/qa_test_plan.md`
+- `artifacts/qa_test_cases.md`
+
+## Run Full Pipeline
 
 ```bash
 python3 -m brd_agent.main run-pipeline --input input/sample_brd.md --output-dir artifacts
 ```
 
-Pipeline sẽ chạy BRD -> BA -> SA, có trace timing từng step.
+Internal sequence:
+1. BRD normalize
+2. Generate standards
+3. BA generate + review + gate
+4. SA generate + review + gate
+5. Dev generate + review + gate
+6. QA generate + review + gate
 
-## Mode Điều Khiển
-
-Mỗi stage hỗ trợ:
-
-- `deterministic`: không gọi LLM.
-- `llm`: bắt buộc LLM, lỗi thì fail.
-- `hybrid`: thử LLM trước, lỗi thì fallback deterministic.
-
-Biến điều khiển:
-
-- `BRD_ANALYZER_MODE`
-- `BA_AGENT_MODE`
-- `SA_AGENT_MODE`
-
-Khuyến nghị mặc định: `hybrid`.
-
-## Cơ Chế Chất Lượng Output
-
-- JSON contract validation bằng Pydantic cho BA/SA.
-- Review/enhance loop:
-  - BA: `BA_REVIEW_ITERATIONS` (mặc định `1`)
-  - SA: `SA_REVIEW_ITERATIONS` (mặc định `1`)
-- Rubric scoring nội bộ:
-  - completeness
-  - implementability
-  - testability
-  - ambiguity penalty
-- Consistency gate:
-  - BA gate: coverage epic/task và trace từ BRD.
-  - SA gate: coverage component/phase/module và tính khả thi kế hoạch.
-
-## Test
+## Run Tests
 
 ```bash
 pytest -q
 ```
 
-## Cấu Trúc Repo (rút gọn)
+Current status:
+- `38 passed`
+
+## Main Structure
 
 ```text
 src/brd_agent/
@@ -156,11 +163,17 @@ src/brd_agent/
     brd.py
     ba.py
     sa.py
+    dev.py
+    qa.py
   services/
     brd_loader.py
     brd_analyzer.py
     ba_agent.py
     sa_agent.py
+    dev_agent.py
+    qa_agent.py
+    orchestrator.py
+    standards.py
     consistency_gate.py
     artifact_writer.py
   templates/
@@ -169,6 +182,11 @@ src/brd_agent/
     task.md.j2
     architecture.md.j2
     dev_plan.md.j2
+    generated_code.md.j2
+    qa_test_plan.md.j2
+    qa_test_cases.md.j2
+    code_standards.md.j2
+    review_standards.md.j2
 
 prompts/
   brd_extraction_prompt.md
@@ -178,22 +196,14 @@ prompts/
   sa_architecture_review_prompt.md
   sa_dev_plan_prompt.md
   sa_dev_plan_review_prompt.md
+  dev_code_prompt.md
   dev_review_prompt.md
+  qa_test_plan_prompt.md
+  qa_review_prompt.md
 ```
 
-## Phạm Vi Hiện Tại
+## Intentionally Not Implemented
 
-Đã có:
-
-- BRD/BA/SA pipeline
-- deterministic + llm + hybrid
-- review loop 1 lần (configurable)
-- consistency gate
-- full pipeline command + trace
-
-Chưa có (cố ý):
-
-- Dev agent tạo code
-- QA/Test agent
-- orchestration framework nhiều agent
-- review gates đa vòng tự động cho toàn pipeline
+- Auto-applying generated snippets directly into the real source tree.
+- Human approval workflow between stages.
+- Runtime sandbox/execution for snippets in `generated_code.md`.

@@ -1,0 +1,124 @@
+# Architecture Plan
+
+## System Overview
+{{ plan.system_overview or "Not specified." }}
+
+## Goals And Constraints
+{% if plan.goals_and_constraints %}
+{% for item in plan.goals_and_constraints %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified in artifacts.
+{% endif %}
+
+## High-Level Architecture
+{{ plan.high_level_architecture or "Not specified." }}
+
+## Architecture Decisions
+{% if plan.architecture_decisions %}
+{% for item in plan.architecture_decisions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Main Components And Responsibilities
+{% if plan.components %}
+{% for component in plan.components %}
+- **{{ component.name or "Unnamed Component" }}**: {{ component.responsibility or "No responsibility specified." }}
+  - Interfaces:
+{% if component.interfaces %}
+{% for iface in component.interfaces %}
+    - {{ iface }}
+{% endfor %}
+{% else %}
+    - Not specified.
+{% endif %}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Data Flow
+{% if plan.data_flow %}
+{% for item in plan.data_flow %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## External Integrations
+## Integration Points
+{% if plan.integration_points %}
+{% for item in plan.integration_points %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## External Integrations
+{% if plan.external_integrations %}
+{% for item in plan.external_integrations %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None identified.
+{% endif %}
+
+## Data And Storage Considerations
+{% if plan.data_storage_considerations %}
+{% for item in plan.data_storage_considerations %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Security Considerations
+{% if plan.security_considerations %}
+{% for item in plan.security_considerations %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Observability Considerations
+{% if plan.observability_considerations %}
+{% for item in plan.observability_considerations %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Non-Functional Considerations
+{% if plan.non_functional_considerations %}
+{% for item in plan.non_functional_considerations %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified.
+{% endif %}
+
+## Risks And Tradeoffs
+{% if plan.risks_and_tradeoffs %}
+{% for item in plan.risks_and_tradeoffs %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None explicitly identified.
+{% endif %}
+
+## Open Questions
+{% if plan.open_questions %}
+{% for item in plan.open_questions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None.
+{% endif %}

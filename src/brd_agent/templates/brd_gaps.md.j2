@@ -1,0 +1,37 @@
+# BRD Gap Report
+
+## Missing Information
+{% if missing_information %}
+{% for item in missing_information %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None identified.
+{% endif %}
+
+## Unclear Requirements
+{% if unclear_requirements %}
+{% for item in unclear_requirements %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None identified.
+{% endif %}
+
+## Assumptions
+{% if assumptions %}
+{% for item in assumptions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None.
+{% endif %}
+
+## Questions To Clarify
+{% if open_questions %}
+{% for item in open_questions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None.
+{% endif %}

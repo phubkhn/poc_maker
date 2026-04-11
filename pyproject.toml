@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brd-agent"
+version = "0.1.0"
+description = "Minimal BRD-to-engineering pipeline scaffold"
+readme = "README.md"
+requires-python = ">=3.9,<3.10"
+dependencies = [
+  "typer>=0.9",
+  "pydantic>=1.10,<2",
+  "jinja2",
+  "litellm",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+brd_agent = ["templates/*.j2"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "src",
+]
+testpaths = [
+  "tests",
+]

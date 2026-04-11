@@ -1,0 +1,120 @@
+# Project Task Breakdown
+
+## Project Summary
+{{ plan.project_summary or "Not specified in BRD." }}
+
+## Scope Summary
+{{ plan.scope_summary or "Not specified in BRD." }}
+
+## Implementation Notes
+{% if plan.implementation_notes %}
+{% for item in plan.implementation_notes %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified in BRD.
+{% endif %}
+
+## Epics
+{% if plan.epics %}
+{% for epic in plan.epics %}
+### {{ epic.name or "Untitled Epic" }}
+Objective: {{ epic.objective or "Not specified." }}
+{{ epic.summary or "No summary provided." }}
+
+Out-Of-Scope Notes:
+{% if epic.out_of_scope_notes %}
+{% for item in epic.out_of_scope_notes %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not specified in BRD.
+{% endif %}
+
+{% if epic.tasks %}
+{% for task in epic.tasks %}
+- **Task:** {{ task.title or "Untitled Task" }}
+  - Description: {{ task.description or "No description provided." }}
+  - Module Hint: {{ task.module_hint or "Not specified." }}
+  - Dependency Notes:
+{% if task.dependency_notes %}
+{% for note in task.dependency_notes %}
+    - {{ note }}
+{% endfor %}
+{% else %}
+    - None identified.
+{% endif %}
+  - Risk Notes:
+{% if task.risk_notes %}
+{% for note in task.risk_notes %}
+    - {{ note }}
+{% endfor %}
+{% else %}
+    - None identified.
+{% endif %}
+  - Open Questions:
+{% if task.open_questions %}
+{% for question in task.open_questions %}
+    - {{ question }}
+{% endfor %}
+{% else %}
+    - None.
+{% endif %}
+  - Acceptance Criteria:
+{% if task.acceptance_criteria %}
+{% for criterion in task.acceptance_criteria %}
+    - {{ criterion }}
+{% endfor %}
+{% else %}
+    - Not specified in BRD.
+{% endif %}
+{% endfor %}
+{% else %}
+- No tasks provided.
+{% endif %}
+{% endfor %}
+{% else %}
+- No epics provided.
+{% endif %}
+
+## Dependencies
+{% if plan.cross_epic_dependencies %}
+Cross-Epic Dependencies:
+{% for item in plan.cross_epic_dependencies %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+{% if plan.dependencies %}
+{% for item in plan.dependencies %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None explicitly identified.
+{% endif %}
+
+## Risks
+{% if plan.risks %}
+{% for item in plan.risks %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None explicitly identified.
+{% endif %}
+
+## Assumptions
+{% if plan.assumptions %}
+{% for item in plan.assumptions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None explicitly identified.
+{% endif %}
+
+## Open Questions
+{% if plan.open_questions %}
+{% for item in plan.open_questions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None.
+{% endif %}

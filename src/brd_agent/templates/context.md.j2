@@ -1,0 +1,65 @@
+# BRD Context Summary
+
+## Project
+
+- Name: {{ brd.project_name or "N/A" }}
+
+## Business Goal
+
+{{ brd.business_goal or "Not provided." }}
+
+## Scope
+
+### In Scope
+{% if brd.in_scope %}
+{% for item in brd.in_scope %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not provided.
+{% endif %}
+
+### Out of Scope
+{% if brd.out_of_scope %}
+{% for item in brd.out_of_scope %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not provided.
+{% endif %}
+
+## Actors
+{% if brd.actors %}
+{% for item in brd.actors %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not provided.
+{% endif %}
+
+## Key Features
+{% if brd.features %}
+{% for item in brd.features %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not provided.
+{% endif %}
+
+## Constraints
+{% if brd.constraints %}
+{% for item in brd.constraints %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- Not provided.
+{% endif %}
+
+## Open Questions
+{% if brd.open_questions %}
+{% for item in brd.open_questions %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None.
+{% endif %}

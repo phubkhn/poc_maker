@@ -18,6 +18,22 @@ Requirements:
 - Python `>=3.9,<3.10` (target: `3.9.6`)
 - pip3
 
+Recommended setup with exact Python 3.9.6:
+
+```bash
+cd /Users/dirak/Documents/AI/POC_MAKER
+brew install pyenv
+pyenv install 3.9.6
+pyenv local 3.9.6
+python -m venv .venv39
+source .venv39/bin/activate
+python --version
+pip install --upgrade pip setuptools wheel
+pip install -e ".[dev]"
+```
+
+Alternative setup if you already have Python 3.9.x:
+
 ```bash
 cd /Users/dirak/Documents/AI/POC_MAKER
 python3 -m venv .venv
@@ -49,6 +65,21 @@ export BA_REVIEW_ITERATIONS=1
 export SA_REVIEW_ITERATIONS=1
 export DEV_REVIEW_ITERATIONS=1
 export QA_REVIEW_ITERATIONS=1
+```
+
+Foundry-specific optional exports:
+
+```bash
+export ANTHROPIC_FOUNDRY_BASE_URL="https://llmrouter.gft.com/"
+export ANTHROPIC_FOUNDRY_API_KEY="skxxxxx"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="claude-sonnet-4-5"
+```
+
+Network pre-check before real LLM run:
+
+```bash
+nslookup llmrouter.gft.com
+curl -I https://llmrouter.gft.com/
 ```
 
 ## 3) BRD Step (`read-brd`)
@@ -175,6 +206,21 @@ Output:
 python3 -m brd_agent.main run-pipeline --input input/sample_brd.md --output-dir artifacts
 ```
 
+Real LLM mode (load `.env` values):
+
+```bash
+source .venv39/bin/activate
+set -a && source .env && set +a
+PYTHONPATH=src python -m brd_agent.main run-pipeline --input input/sample_brd.md --output-dir artifacts --trace
+```
+
+Deterministic fallback mode:
+
+```bash
+source .venv39/bin/activate
+PYTHONPATH=src BRD_ANALYZER_MODE=deterministic BA_AGENT_MODE=deterministic SA_AGENT_MODE=deterministic DEV_AGENT_MODE=deterministic QA_AGENT_MODE=deterministic python -m brd_agent.main run-pipeline --input input/sample_brd.md --output-dir artifacts --trace
+```
+
 Full output set:
 - `brd_normalized.json`
 - `context.md`
@@ -195,7 +241,7 @@ pytest -q
 ```
 
 Current status:
-- `38 passed`
+- `39 passed`
 
 ## 11) Suggested Artifact Reading Order Before Real Coding
 

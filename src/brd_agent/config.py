@@ -93,11 +93,29 @@ def _resolve_api_key(primary_env, fallback_envs):
     return None
 
 
+def _normalize_model_name(model_name):
+    value = (model_name or "").strip()
+    if value.startswith("claude-") and "/" not in value:
+        return "anthropic/{0}".format(value)
+    return value
+
+
 def load_llm_settings():
     """Load BRD extraction LLM settings from environment variables."""
-    model_name = os.getenv("BRD_LLM_MODEL", "gpt-4o-mini")
-    api_key = _resolve_api_key("BRD_LLM_API_KEY", ("OPENAI_API_KEY",))
-    base_url = os.getenv("BRD_LLM_BASE_URL", "")
+    model_name = _normalize_model_name(
+        os.getenv(
+            "BRD_LLM_MODEL",
+            os.getenv("ANTHROPIC_DEFAULT_SONNET_MODEL", "gpt-4o-mini"),
+        )
+    )
+    api_key = _resolve_api_key(
+        "BRD_LLM_API_KEY",
+        ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_FOUNDRY_API_KEY"),
+    )
+    base_url = os.getenv(
+        "BRD_LLM_BASE_URL",
+        os.getenv("ANTHROPIC_FOUNDRY_BASE_URL", ""),
+    )
     prompt_path = Path(
         os.getenv("BRD_EXTRACTION_PROMPT_PATH", str(DEFAULT_BRD_PROMPT_PATH))
     )
@@ -117,9 +135,25 @@ def load_brd_analyzer_mode():
 
 def load_ba_llm_settings():
     """Load BA generation settings from environment variables."""
-    model_name = os.getenv("BA_LLM_MODEL", os.getenv("BRD_LLM_MODEL", "gpt-4o-mini"))
-    api_key = _resolve_api_key("BA_LLM_API_KEY", ("BRD_LLM_API_KEY", "OPENAI_API_KEY"))
-    base_url = os.getenv("BA_LLM_BASE_URL", os.getenv("BRD_LLM_BASE_URL", ""))
+    model_name = _normalize_model_name(
+        os.getenv(
+            "BA_LLM_MODEL",
+            os.getenv("BRD_LLM_MODEL", os.getenv("ANTHROPIC_DEFAULT_SONNET_MODEL", "gpt-4o-mini")),
+        )
+    )
+    api_key = _resolve_api_key(
+        "BA_LLM_API_KEY",
+        (
+            "BRD_LLM_API_KEY",
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "ANTHROPIC_FOUNDRY_API_KEY",
+        ),
+    )
+    base_url = os.getenv(
+        "BA_LLM_BASE_URL",
+        os.getenv("BRD_LLM_BASE_URL", os.getenv("ANTHROPIC_FOUNDRY_BASE_URL", "")),
+    )
     prompt_path = Path(os.getenv("BA_TASK_PROMPT_PATH", str(DEFAULT_BA_PROMPT_PATH)))
 
     return LLMSettings(
@@ -145,12 +179,26 @@ def load_ba_review_iterations():
 
 def load_sa_llm_settings():
     """Load SA generation settings from environment variables."""
-    model_name = os.getenv("SA_LLM_MODEL", os.getenv("BA_LLM_MODEL", "gpt-4o-mini"))
+    model_name = _normalize_model_name(
+        os.getenv(
+            "SA_LLM_MODEL",
+            os.getenv("BA_LLM_MODEL", os.getenv("ANTHROPIC_DEFAULT_SONNET_MODEL", "gpt-4o-mini")),
+        )
+    )
     api_key = _resolve_api_key(
         "SA_LLM_API_KEY",
-        ("BA_LLM_API_KEY", "BRD_LLM_API_KEY", "OPENAI_API_KEY"),
+        (
+            "BA_LLM_API_KEY",
+            "BRD_LLM_API_KEY",
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "ANTHROPIC_FOUNDRY_API_KEY",
+        ),
     )
-    base_url = os.getenv("SA_LLM_BASE_URL", os.getenv("BA_LLM_BASE_URL", ""))
+    base_url = os.getenv(
+        "SA_LLM_BASE_URL",
+        os.getenv("BA_LLM_BASE_URL", os.getenv("ANTHROPIC_FOUNDRY_BASE_URL", "")),
+    )
     arch_prompt_path = Path(
         os.getenv("SA_ARCH_PROMPT_PATH", str(DEFAULT_SA_ARCH_PROMPT_PATH))
     )
@@ -194,12 +242,27 @@ def load_sa_review_iterations():
 
 
 def load_dev_llm_settings():
-    model_name = os.getenv("DEV_LLM_MODEL", os.getenv("SA_LLM_MODEL", "gpt-4o-mini"))
+    model_name = _normalize_model_name(
+        os.getenv(
+            "DEV_LLM_MODEL",
+            os.getenv("SA_LLM_MODEL", os.getenv("ANTHROPIC_DEFAULT_SONNET_MODEL", "gpt-4o-mini")),
+        )
+    )
     api_key = _resolve_api_key(
         "DEV_LLM_API_KEY",
-        ("SA_LLM_API_KEY", "BA_LLM_API_KEY", "BRD_LLM_API_KEY", "OPENAI_API_KEY"),
+        (
+            "SA_LLM_API_KEY",
+            "BA_LLM_API_KEY",
+            "BRD_LLM_API_KEY",
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "ANTHROPIC_FOUNDRY_API_KEY",
+        ),
     )
-    base_url = os.getenv("DEV_LLM_BASE_URL", os.getenv("SA_LLM_BASE_URL", ""))
+    base_url = os.getenv(
+        "DEV_LLM_BASE_URL",
+        os.getenv("SA_LLM_BASE_URL", os.getenv("ANTHROPIC_FOUNDRY_BASE_URL", "")),
+    )
     prompt_path = Path(
         os.getenv("DEV_CODE_PROMPT_PATH", str(DEFAULT_DEV_CODE_PROMPT_PATH))
     )
@@ -226,12 +289,28 @@ def load_dev_review_iterations():
 
 
 def load_qa_llm_settings():
-    model_name = os.getenv("QA_LLM_MODEL", os.getenv("DEV_LLM_MODEL", "gpt-4o-mini"))
+    model_name = _normalize_model_name(
+        os.getenv(
+            "QA_LLM_MODEL",
+            os.getenv("DEV_LLM_MODEL", os.getenv("ANTHROPIC_DEFAULT_SONNET_MODEL", "gpt-4o-mini")),
+        )
+    )
     api_key = _resolve_api_key(
         "QA_LLM_API_KEY",
-        ("DEV_LLM_API_KEY", "SA_LLM_API_KEY", "BA_LLM_API_KEY", "BRD_LLM_API_KEY", "OPENAI_API_KEY"),
+        (
+            "DEV_LLM_API_KEY",
+            "SA_LLM_API_KEY",
+            "BA_LLM_API_KEY",
+            "BRD_LLM_API_KEY",
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "ANTHROPIC_FOUNDRY_API_KEY",
+        ),
     )
-    base_url = os.getenv("QA_LLM_BASE_URL", os.getenv("DEV_LLM_BASE_URL", ""))
+    base_url = os.getenv(
+        "QA_LLM_BASE_URL",
+        os.getenv("DEV_LLM_BASE_URL", os.getenv("ANTHROPIC_FOUNDRY_BASE_URL", "")),
+    )
     prompt_path = Path(
         os.getenv("QA_PLAN_PROMPT_PATH", str(DEFAULT_QA_PLAN_PROMPT_PATH))
     )

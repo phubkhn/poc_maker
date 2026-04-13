@@ -336,7 +336,14 @@ class DevAgent(object):
         }
 
 
-def deterministic_generate_dev_plan(normalized_brd, task_markdown, architecture_markdown, dev_plan_markdown):
+def deterministic_generate_dev_plan(
+    normalized_brd,
+    task_markdown,
+    architecture_markdown,
+    dev_plan_markdown,
+    code_standards_markdown=None,
+    review_standards_markdown=None,
+):
     """Deterministic Dev plan used for deterministic and hybrid fallback modes."""
     return DevPlan(
         implementation_summary=(

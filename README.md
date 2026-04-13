@@ -22,6 +22,21 @@ Artifact-driven pipeline for `BRD -> BA -> SA -> Dev -> QA`, with one auto revie
 
 ## Setup
 
+Recommended (exact Python target 3.9.6 via pyenv):
+
+```bash
+brew install pyenv
+pyenv install 3.9.6
+pyenv local 3.9.6
+python -m venv .venv39
+source .venv39/bin/activate
+python --version
+pip install --upgrade pip setuptools wheel
+pip install -e ".[dev]"
+```
+
+Alternative (if your system Python is already 3.9.x):
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -50,6 +65,37 @@ export BA_REVIEW_ITERATIONS=1
 export SA_REVIEW_ITERATIONS=1
 export DEV_REVIEW_ITERATIONS=1
 export QA_REVIEW_ITERATIONS=1
+```
+
+Optional Foundry-style defaults (supported as fallback inputs by config):
+
+```bash
+export ANTHROPIC_FOUNDRY_BASE_URL=https://llmrouter.gft.com/
+export ANTHROPIC_FOUNDRY_API_KEY=sk-ant-xxxx
+export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4-5
+```
+
+## Real LLM Mode (Sonnet/Foundry)
+
+1. Ensure network access to your router endpoint (VPN/internal DNS may be required):
+
+```bash
+nslookup llmrouter.gft.com
+curl -I https://llmrouter.gft.com/
+```
+
+2. Run pipeline in real mode from `.env`:
+
+```bash
+source .venv39/bin/activate
+set -a && source .env && set +a
+PYTHONPATH=src python -m brd_agent.main run-pipeline --input input/sample_brd.md --output-dir artifacts --trace
+```
+
+If router DNS fails, use deterministic fallback immediately:
+
+```bash
+PYTHONPATH=src BRD_ANALYZER_MODE=deterministic BA_AGENT_MODE=deterministic SA_AGENT_MODE=deterministic DEV_AGENT_MODE=deterministic QA_AGENT_MODE=deterministic python -m brd_agent.main run-pipeline --input input/sample_brd.md --output-dir artifacts --trace
 ```
 
 ## Run Commands
@@ -150,7 +196,7 @@ pytest -q
 ```
 
 Current status:
-- `38 passed`
+- `39 passed`
 
 ## Main Structure
 
